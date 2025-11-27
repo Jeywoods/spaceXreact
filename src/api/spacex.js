@@ -1,30 +1,24 @@
-class SpaceX{
+// src/api/spacex.js
+export class SpaceX {
+  constructor(baseUrl = "https://api.spacexdata.com/v4/") {
+    this.baseUrl = baseUrl;
+  }
 
-    constructor(baseUrl = "https://api.spacexdata.com/v4/") {
-        this.baseUrl = baseUrl;
-    }
+  async launches() {
+    const res = await fetch(`${this.baseUrl}launches`);
+    if (!res.ok) throw new Error("Failed to fetch launches");
+    return res.json();
+  }
 
-    launches(){
-        return fetch(`${this.baseUrl}launches`)
-            .then(response=>response.json());
-    }
+  async launchpads() {
+    const res = await fetch(`${this.baseUrl}launchpads`);
+    if (!res.ok) throw new Error("Failed to fetch launchpads");
+    return res.json();
+  }
 
-    launchpads(){
-        return fetch(`${this.baseUrl}launchpads`)
-            .then(response=>response.json());
-    }
-
-    launchpad(id){
-        return fetch(`${this.baseUrl}launchpads/${id}`)
-            .then(response=>response.json());
-    }
-
-    starlinks(){
-        return fetch(`${this.baseUrl}starlink`)
-            .then(response=>response.json());
-    }
+  async launchpad(id) {
+    const res = await fetch(`${this.baseUrl}launchpads/${id}`);
+    if (!res.ok) throw new Error("Failed to fetch launchpad " + id);
+    return res.json();
+  }
 }
-
-export {SpaceX}
-
-

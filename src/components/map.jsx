@@ -1,52 +1,81 @@
+import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
-import * as Geo from "../geo.json";
-import {useRef, useEffect} from "react";
+import Geo from "../geo.json";
 
-function Map(props){
-    const width = 1000;
-    const height = 600;
-    const margin = {
-        top: 20,
-        right: 20,
-        bottom: 20,
-        left: 100
-    };
-    const containerRef = useRef(null);
-    useEffect(()=> { const svg = d3.select(containerRef.current).append("svg");
-        svg.selectAll("*").remove();
-        svg.attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom )
-            .append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`)
+export function Map({ launchpads = [], highlightedPad = null }) {
+  const containerRef = useRef(null);
+  const width = 1000;
+  const height = 600;
 
-        const projection = d3.geoMercator()
-            .scale(70)
-            .center([0, 20])
-            .translate([width/2 - margin.left, height/2 - margin.top]);
-        const g = svg.append("g");
+  // Рисуем карту один раз
+  //очистка блока
+  useEffect(() => {
+    const root = d3.select(containerRef.current);
+    root.selectAll("*").remove();
+    //создаем svg
+    const svg = root
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .style("display", "block");
 
-        g.selectAll("path")
-            .data(Geo.features)
-            .enter()
-            .append("path")
-            .attr("class", "topo")
-            .attr("d", d3.geoPath().projection(projection))
-            .style("opacity", .7)
-        const zoom = d3.zoom()
-            .scaleExtent([1, 8])
-            .on('zoom', function(event) {
-                g.selectAll('path')
-                    .attr('transform', event.transform);
-            });
+      //кидаем слои с точками и мапой
+    const rootG = svg.append("g").attr("class", "rootG");
+    rootG.append("g").attr("class", "gMap");
+    rootG.append("g").attr("class", "gPads");
 
-        svg.call(zoom); }, []);
+    const projection = d3.geoMercator()
+      .scale(130)
+      .translate([width / 2, height / 1.5]);
 
+    const path = d3.geoPath().projection(projection);
+    const gMap = rootG.select(".gMap");
 
+    //Карта
+    gMap.selectAll("path")
+      .data(Geo.features)
+      .enter()
+      .append("path")
+      .attr("d", path)
+      .attr("fill", "#9cc")
+      .attr("stroke", "#333");
 
-    return(
-        <div className="mapContainer map" ref={containerRef}>
-        </div>
-    )
+    const zoom = d3.zoom().scaleExtent([1, 8])
+      .on("zoom", (event) => rootG.attr("transform", event.transform));
+
+    svg.call(zoom);
+  }, []);
+
+  useEffect(() => {
+    const svg = d3.select(containerRef.current).select("svg");
+
+    const projection = d3.geoMercator()
+      .scale(130)
+      .translate([width / 2, height / 1.5]);
+
+    const gPads = svg.select(".gPads");
+
+    console.log("Launchpads total:", launchpads.length);
+    //связь элементов списка и точками
+    const circles = gPads
+      .selectAll("circle")
+      .data(launchpads, d => d.id);
+
+    const enter = circles.enter()
+      .append("circle")
+      .attr("r", 6);
+
+    enter.append("title").text(d => d.name);
+
+    const merged = enter.merge(circles);
+
+    // рисуем точки 
+    merged
+      .attr("cx", d => projection([d.longitude, d.latitude])[0])
+      .attr("cy", d => projection([d.longitude, d.latitude])[1])
+      .attr("fill", d => d.id === highlightedPad ? "red" : "yellow")
+      .attr("r", d => (d.id === highlightedPad ? 15 : 6)); // шире при наведении
+  }, [launchpads, highlightedPad]);
+
+  return <div ref={containerRef} />;
 }
-
-export {Map}

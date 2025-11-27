@@ -1,24 +1,51 @@
-import {LaunchList} from "./launchList";
-import {Map} from "./map";
-import {useEffect, useState} from "react";
-import {SpaceX} from "../api/spacex";
+// src/components/app.jsx
+import React, { useEffect, useState } from "react";
+import { LaunchList } from "./launchList";
+import { Map } from "./map";
+import { SpaceX } from "../api/spacex";
 
-function App(){
+export function App() {
+  const spacex = new SpaceX();
 
-    const [launches, setLaunches] = useState([]);
-    const spacex = new SpaceX();
-    useEffect(()=>{
-        spacex.launches().then(data =>{
-            setLaunches(data)
-        })
-    },[])
+  const [launches, setLaunches] = useState([]);
+  const [launchpads, setLaunchpads] = useState([]);
+  //id площадки
+  const [highlightedPad, setHighlightedPad] = useState(null);
+  const [loading, setLoading] = useState(true);
+ // Загружаем данные
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true);  //индикатор загрузки
+        const [ls, pads] = await Promise.all([
+          spacex.launches(),
+          spacex.launchpads()
+        ]);
 
-    return(
-        <main className='main'>
-            <LaunchList launches = {launches}/>
-            <Map/>
-        </main>
-    )
+        setLaunches(ls);
+        setLaunchpads(pads);
+      } catch (err) {
+        console.error("Ошибка загрузки данных:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
+  }, []);
+
+  return (
+    <main className="main" style={{ display: "flex", gap: 20 }}>
+      <LaunchList //список запусков
+        launches={launches}
+        onHover={setHighlightedPad}
+        loading={loading}
+      />
+
+      <Map //точки и карта
+        launchpads={launchpads}
+        highlightedPad={highlightedPad}
+      />
+    </main>
+  );
 }
-
-export {App};
