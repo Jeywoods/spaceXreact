@@ -1,4 +1,3 @@
-// src/components/app.jsx
 import React, { useEffect, useState } from "react";
 import { LaunchList } from "./launchList";
 import { Map } from "./map";

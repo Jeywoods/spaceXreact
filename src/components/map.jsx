@@ -7,19 +7,15 @@ export function Map({ launchpads = [], highlightedPad = null }) {
   const width = 1000;
   const height = 600;
 
-  // Рисуем карту один раз
-  //очистка блока
   useEffect(() => {
     const root = d3.select(containerRef.current);
     root.selectAll("*").remove();
-    //создаем svg
     const svg = root
       .append("svg")
       .attr("width", width)
       .attr("height", height)
       .style("display", "block");
 
-      //кидаем слои с точками и мапой
     const rootG = svg.append("g").attr("class", "rootG");
     rootG.append("g").attr("class", "gMap");
     rootG.append("g").attr("class", "gPads");
@@ -31,7 +27,6 @@ export function Map({ launchpads = [], highlightedPad = null }) {
     const path = d3.geoPath().projection(projection);
     const gMap = rootG.select(".gMap");
 
-    //Карта
     gMap.selectAll("path")
       .data(Geo.features)
       .enter()
@@ -56,7 +51,6 @@ export function Map({ launchpads = [], highlightedPad = null }) {
     const gPads = svg.select(".gPads");
 
     console.log("Launchpads total:", launchpads.length);
-    //связь элементов списка и точками
     const circles = gPads
       .selectAll("circle")
       .data(launchpads, d => d.id);
@@ -69,12 +63,11 @@ export function Map({ launchpads = [], highlightedPad = null }) {
 
     const merged = enter.merge(circles);
 
-    // рисуем точки 
     merged
       .attr("cx", d => projection([d.longitude, d.latitude])[0])
       .attr("cy", d => projection([d.longitude, d.latitude])[1])
       .attr("fill", d => d.id === highlightedPad ? "red" : "yellow")
-      .attr("r", d => (d.id === highlightedPad ? 15 : 6)); // шире при наведении
+      .attr("r", d => (d.id === highlightedPad ? 15 : 6));
   }, [launchpads, highlightedPad]);
 
   return <div ref={containerRef} />;

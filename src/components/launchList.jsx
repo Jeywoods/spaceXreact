@@ -2,7 +2,6 @@ import React from "react";
 
 export function LaunchList({ launches = [], onHover, loading = false }) {
   
-  // Если данные ещё загружаются — показываем простое сообщение
   if (loading) {
     return (
       <aside className="aside" id="launchesContainer">
@@ -12,7 +11,6 @@ export function LaunchList({ launches = [], onHover, loading = false }) {
     );
   }
 
-  // Основной вывод компонента
   return (
     <aside
       className="aside"
@@ -30,11 +28,9 @@ export function LaunchList({ launches = [], onHover, loading = false }) {
               <li
                 key={launch.id}
                 
-                // При наведении сообщаем карте, какая площадка соответствует запуску
                 onMouseEnter={() => onHover && onHover(padId)}
                 onMouseLeave={() => onHover && onHover(null)}
 
-                // Стили для элемента списка
                 style={{
                   cursor: padId ? "pointer" : "default",
                   padding: "8px 6px",
